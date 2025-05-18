@@ -1,24 +1,32 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Info | BMI</title>
+    @vite('resources/css/app.css')
+</head>
+<body class="bg-gray-900 text-white p-8">
 
-@section('content')
-<div class="flex items-center justify-center min-h-screen bg-[#fef6ff]">
-    <div class="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 class="text-xl font-semibold mb-4 text-center text-gray-800">Enter Your Key</h2>
+    <div class="max-w-xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-center">Welcome, {{ $user->first_name }}!</h1>
 
-        <form method="GET" action="/access/search">
-            <input type="text" name="key" maxlength="5" placeholder="5-digit Key"
-                   class="w-full mb-4 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500" required>
-            <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 text-sm font-medium tracking-wide">View Info</button>
-        </form>
-
-        @isset($user)
-        <div class="mt-6 p-4 bg-gray-50 rounded shadow text-sm">
-            <h3 class="font-semibold text-center mb-2">User Info</h3>
-            <p><strong>Name:</strong> {{ $user['name'] }}</p>
-            <p><strong>Username:</strong> {{ $user['username'] }}</p>
-            <p><strong>BMI:</strong> {{ $user['bmi'] }}</p>
+        <div class="bg-gray-800 p-6 rounded shadow space-y-4">
+            <div><strong>Last Name:</strong> {{ $user->last_name }}</div>
+            <div><strong>First Name:</strong> {{ $user->first_name }}</div>
+            <div><strong>Middle Name:</strong> {{ $user->middle_name ?? 'N/A' }}</div>
+            <div><strong>Suffix:</strong> {{ $user->suffix ?? 'N/A' }}</div>
+            <div><strong>Sex:</strong> {{ $user->sex }}</div>
+            <div><strong>Age:</strong> {{ $user->age }}</div>
+            <div><strong>Birthdate:</strong> {{ $user->birthdate }}</div>
+            <div><strong>Access Key:</strong> <code>{{ $user->key }}</code></div>
         </div>
-        @endisset
+
+        <div class="mt-6 text-center">
+            <a href="/logout" class="bg-red-600 px-4 py-2 rounded hover:bg-red-800">
+                Logout
+            </a>
+        </div>
     </div>
-</div>
-@endsection
+
+</body>
+</html>

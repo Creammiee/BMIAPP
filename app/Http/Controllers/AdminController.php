@@ -3,57 +3,118 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class AdminController extends Controller
 {
-    public function gate()
+    /**
+     * Show admin dashboard with user list and search.
+     */
+    public function index(Request $request)
     {
-        if (session('admin_key') === '12345') {
-            $users = [
-                ['key' => '12345', 'name' => 'Juan Dela Cruz', 'age' => 25, 'sex' => 'Male', 'height' => 170, 'weight' => 65, 'bmi' => 22.5],
-                ['key' => '67890', 'name' => 'Maria Santos', 'age' => 30, 'sex' => 'Female', 'height' => 160, 'weight' => 55, 'bmi' => 21.5],
-            ];
-            return view('admin', compact('users'));
+        if (!session('admin_key')) {
+            return redirect('/')->with('error', 'Unauthorized access.');
         }
 
-        return view('login');
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%$search%")
+                  ->orWhere('last_name', 'like', "%$search%")
+                  ->orWhere('key', 'like', "%$search%");
+            });
+        }
+
+        $users = $query->get();
+        return view('admin.index', compact('users'));
     }
 
-    public function verifyKey(Request $request)
+    /**
+     * Show the edit form.
+     */
+    public function edit(User $user)
     {
-        $request->validate([
-            'key' => 'required|digits:5',
+        if (!session('admin_key')) {
+            return redirect('/')->with('error', 'Unauthorized access.');
+        }
+
+        return view('admin.edit', compact('user'));
+    }
+
+    /**
+     * Update the user.
+     */
+    public function update(Request $request, User $user)
+    {
+        if (!session('admin_key')) {
+            return redirect('/')->with('error', 'Unauthorized access.');
+        }
+
+        $validated = $request->validate([
+            'last_name' => 'required|string',
+            'first_name' => 'required|string',
+            'middle_name' => 'nullable|string',
+            'suffix' => 'nullable|string',
+            'sex' => 'required|in:Male,Female',
+            'age' => 'required|integer|min:1|max:999',
+            'birthdate' => 'required|date',
         ]);
 
-        if ($request->key === '12345') {
-            session(['admin_key' => $request->key]);
-            return redirect('/admin');
-        }
+        $user->update($validated);
 
-        return redirect('/admin')->with('error', 'Invalid key.');
+        return redirect('/admin')->with('status', 'User updated successfully.');
     }
 
+    /**
+     * Save a new user.
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'key' => 'required|digits:5',
-            'name' => 'required|string',
-            'age' => 'required|numeric|min:0',
-            'sex' => 'required|string',
-            'height' => 'required|numeric',
-            'weight' => 'required|numeric',
-            'bmi' => 'required|numeric',
+        if (!session('admin_key')) {
+            return redirect('/')->with('error', 'Unauthorized access.');
+        }
+
+        $validated = $request->validate([
+            'last_name' => 'required|string',
+            'first_name' => 'required|string',
+            'middle_name' => 'nullable|string',
+            'suffix' => 'nullable|string',
+            'sex' => 'required|in:Male,Female',
+            'age' => 'required|integer|min:1|max:999',
+            'birthdate' => 'required|date',
         ]);
 
-        // Save logic goes here (Firebase soon)
+        do {
+            $key = str_pad(random_int(0, 99999), 5, '0', STR_PAD_LEFT);
+        } while (User::where('key', $key)->exists());
 
-        return back()->with('status', "User created with key: {$request->key}");
+        User::create([
+            'last_name' => $validated['last_name'],
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'],
+            'suffix' => $validated['suffix'],
+            'sex' => $validated['sex'],
+            'age' => $validated['age'],
+            'birthdate' => $validated['birthdate'],
+            'key' => $key,
+        ]);
+
+        return redirect('/admin')->with('status', 'User created with key: ' . $key);
     }
 
-    public function destroy($key)
+    /**
+     * Delete user.
+     */
+    public function destroy(User $user)
     {
-        // Delete logic goes here (Firebase soon)
+        if (!session('admin_key')) {
+            return redirect('/')->with('error', 'Unauthorized access.');
+        }
 
-        return back()->with('status', "User {$key} deleted.");
+        $user->delete();
+        return redirect('/admin')->with('status', 'User deleted.');
     }
 }

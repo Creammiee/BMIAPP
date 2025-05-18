@@ -1,32 +1,32 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Login</title>
+    @vite('resources/css/app.css')
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-md mx-auto mt-24 bg-gray-800 p-6 rounded shadow">
+        <h1 class="text-2xl font-bold mb-4 text-center">Enter Access Code</h1>
 
-@section('content')
-<div class="flex items-center justify-center min-h-screen bg-[#fef6ff]">
-    <div class="bg-white p-8 rounded-lg shadow-md w-80">
-        <h2 class="text-xl font-semibold mb-4 text-center text-gray-800">ID NUMBER</h2>
-
-        {{-- Success message --}}
-        @if(session('status'))
-            <div class="mb-4 text-sm text-green-600 text-center">
-                {{ session('status') }}
-            </div>
-        @endif
-
-        {{-- Error message --}}
         @if(session('error'))
-            <div class="mb-4 text-sm text-red-600 text-center">
-                {{ session('error') }}
-            </div>
+            <p class="text-red-500 text-center mb-4">{{ session('error') }}</p>
         @endif
 
-        {{-- ✅ Form must post to /login --}}
+        @if(session('status'))
+            <p class="text-green-500 text-center mb-4">{{ session('status') }}</p>
+        @endif
+
         <form method="POST" action="/login">
             @csrf
-            <input type="text" name="key" maxlength="5" placeholder="Enter 5-digit Key"
-                   class="w-full mb-4 border border-gray-300 rounded px-3 py-2 text-sm"
-                   required>
-            <button class="w-full bg-black text-white py-2 rounded">PROCEED</button>
+            <input name="key" type="text" maxlength="5" placeholder="Enter your 5-digit key"
+                   required class="w-full p-3 mb-4 rounded bg-gray-700 text-white text-center text-xl tracking-widest">
+
+            <button type="submit"
+                    class="w-full bg-blue-600 hover:bg-blue-800 p-3 rounded text-white font-semibold">
+                Login
+            </button>
         </form>
     </div>
-</div>
-@endsection
+</body>
+</html>
